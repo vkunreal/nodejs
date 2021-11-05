@@ -1,26 +1,60 @@
+#!/usr/bin/env node
+
+const inquirer = require("inquirer");
+const yargs = require("yargs");
+const path = require("path");
 const fs = require("fs");
-const lineReader = require("readline");
 
-const logPath = "./access.log";
-
-const readStream = fs.createReadStream(logPath);
-const writeStream1 = fs.createWriteStream("89.123.1.41_requests.log", {
-  encoding: "utf-8",
-  flags: "a",
-});
-const writeStream2 = fs.createWriteStream("34.48.240.111_requests.log", {
-  encoding: "utf-8",
-  flags: "a",
-});
-
-const rd = lineReader.createInterface({
-  input: readStream,
-});
-
-rd.on("line", (line) => {
-  if (line.includes("89.123.1.41")) {
-    writeStream1.write(line + "\n");
-  } else if (line.includes("34.48.240.111")) {
-    writeStream2.write(line + "\n");
+class dirItem {
+  constructor(name, path) {
+    this.name = name;
+    this.path = path;
   }
-});
+
+  isDir() {
+    return fs.lstatSync(this.path).isDirectory();
+  }
+}
+
+const options = yargs.usage("Usage: -d <path>").option("d", {
+  alias: "dir",
+  describe: "Path to directory",
+  type: "string",
+}).argv;
+
+let curDir = process.cwd();
+
+if (options.dir) curDir = options.dir;
+
+const run = async () => {
+  const list = await fs.readdirSync(curDir);
+  const listItems = list.map(
+    (name) => new dirItem(name, path.resolve(curDir, name))
+  );
+
+  const chooseElem = await inquirer
+    .prompt([
+      {
+        name: "fileName",
+        type: "list",
+        message: "Choose file:",
+        choices: listItems.map((elem) => elem.name),
+      },
+    ])
+    .then(
+      (answer) => listItems.filter((elem) => elem.name === answer.fileName)[0]
+    );
+
+  if (chooseElem.isDir()) {
+    curDir = chooseElem.path;
+    return await run();
+  } else {
+    await fs.readFile(chooseElem.path, "utf-8", (err, data) => {
+      if (err) console.log(err);
+
+      console.log(data);
+    });
+  }
+};
+
+run();
