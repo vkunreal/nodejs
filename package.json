@@ -1,0 +1,26 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vkunreal/nodejs.git"
+  },
+  "author": "vkunreal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vkunreal/nodejs/issues"
+  },
+  "homepage": "https://github.com/vkunreal/nodejs#readme",
+  "dependencies": {
+    "inquirer": "^8.2.0",
+    "yargs": "^17.2.1"
+  },
+  "bin": {
+    "reader": "index.js"
+  }
+}
